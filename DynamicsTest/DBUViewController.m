@@ -21,6 +21,8 @@
 
 @property (strong, nonatomic) UISnapBehavior *textFieldSnapBehavior;
 @property (strong, nonatomic) UISnapBehavior *fallingButtonSnapBehavior;
+@property (strong, nonatomic) UISnapBehavior *danglingButtonSnapBehavior;
+@property (strong, nonatomic) UIAttachmentBehavior *springBehavior;
 @end
 
 @implementation DBUViewController
@@ -32,11 +34,8 @@
     
     self.animator = [[UIDynamicAnimator alloc] initWithReferenceView:self.view];
     
-    UIAttachmentBehavior *springBehavior = [[UIAttachmentBehavior alloc] initWithItem:self.danglingButton offsetFromCenter:UIOffsetMake(/*20.0f*/0, /*self.danglingButton.frame.size.height/2*/0) attachedToAnchor:CGPointMake(self.redSquare.center.x, self.redSquare.center.y)];
-    [springBehavior setFrequency:1.0f];
-    [springBehavior setDamping:0.1f];
+    [self.animator addBehavior:self.springBehavior];
     
-    [self.animator addBehavior:springBehavior];
     
     NSLog(@"gravity: %@", self.gravityBeahvior);
 }
@@ -65,12 +64,35 @@
     }
     return _fallingButtonSnapBehavior;
 }
+- (UISnapBehavior *)danglingButtonSnapBehavior
+{
+    if (_danglingButtonSnapBehavior == nil) {
+        _danglingButtonSnapBehavior = [[UISnapBehavior alloc] initWithItem:self.danglingButton snapToPoint:self.danglingButton.center];
+    }
+    return _danglingButtonSnapBehavior;
+}
+- (UIAttachmentBehavior *)springBehavior
+{
+    if (_springBehavior == nil) {
+        
+        //_springBehavior = [[UIAttachmentBehavior alloc] initWithItem:self.danglingButton offsetFromCenter:UIOffsetMake(/*20.0f*/0, /*self.danglingButton.frame.size.height/2*/0) attachedToAnchor:CGPointMake(self.redSquare.center.x, self.redSquare.center.y)];
+        //_springBehavior = [[UIAttachmentBehavior alloc] initWithItem:self.danglingButton attachedToItem:self.redSquare];
+        _springBehavior = [[UIAttachmentBehavior alloc] initWithItem:self.danglingButton attachedToAnchor:CGPointMake(self.redSquare.center.x, self.redSquare.center.y)];
+        [_springBehavior setFrequency:1.0f];
+        [_springBehavior setDamping:0.1f];
+    }
+    return _springBehavior;
+}
+
 - (IBAction)startButton:(UIButton *)sender
 {
     if (!self.gravityBeahvior) {
         [sender setTitle:@"Stop" forState:UIControlStateNormal];
         [self.animator removeBehavior:self.textFieldSnapBehavior];
         [self.animator removeBehavior:self.fallingButtonSnapBehavior];
+        [self.animator removeBehavior:self.danglingButtonSnapBehavior];
+        
+        [self.animator addBehavior:self.springBehavior];
         
         self.gravityBeahvior = [[UIGravityBehavior alloc] initWithItems:@[self.fallingButton, self.textField]];
         [self.gravityBeahvior addItem:self.danglingButton];
@@ -78,9 +100,12 @@
     }else{
         [sender setTitle:@"Start" forState:UIControlStateNormal];
         [self.animator removeBehavior:self.gravityBeahvior];
+        [self.animator removeBehavior:self.springBehavior];
+        
         self.gravityBeahvior = nil;
         [self.animator addBehavior:self.textFieldSnapBehavior];
         [self.animator addBehavior:self.fallingButtonSnapBehavior];
+        [self.animator addBehavior:self.danglingButtonSnapBehavior];
     }
     
     
